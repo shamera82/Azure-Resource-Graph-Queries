@@ -1,0 +1,8 @@
+Resources
+| where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines') 
+| extend resourceId=tolower(id) 
+| join kind = leftouter ( RecoveryServicesResources
+| where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+| where properties.backupManagementType == "AzureIaasVM"
+| project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, isBackedUp = isnotempty(id) ) on resourceId 
+| extend isProtected = isnotempty(backupItemid)
