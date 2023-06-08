@@ -1,0 +1,10 @@
+resources
+| where type == "microsoft.compute/virtualmachines"
+| extend sku = properties.storageProfile.imageReference.sku
+| extend publisher = properties.storageProfile.imageReference.publisher
+| extend offer = properties.storageProfile.imageReference.offer
+| extend osType = properties.storageProfile.osDisk.osType
+| extend osVersion = properties.extended.instanceView.osVersion
+| extend osName = properties.extended.instanceView.osName
+| extend PowerStatus = properties.extended.instanceView.powerState.displayStatus 
+| project name, subscriptionId, location,  resourceGroup,type, publisher,sku , offer, osType, osVersion, osName, PowerStatus, tags
