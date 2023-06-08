@@ -1,0 +1,17 @@
+resources
+| where type == "microsoft.compute/virtualmachines"
+//| where name contains "jmp"
+| where name matches regex @'(jmp|JMP|jump|JUMP)'
+//| where name matches regex @'((jmp|JMP|jump|JUMP)|$)[0-10]'
+| extend vmSize = properties.hardwareProfile.vmSize
+| extend diskSizeGB = properties.storageProfile.osDisk.diskSizeGB
+//| extend publisher = properties.storageProfile.imageReference.publisher
+//| extend offer = properties.storageProfile.imageReference.offer
+//| extend osType = properties.storageProfile.osDisk.osType
+//| extend osVersion = properties.extended.instanceView.osVersion
+| extend osName = properties.extended.instanceView.osName
+| extend PowerStatus = properties.extended.instanceView.powerState.displayStatus 
+//| extend vm_start = tags.VM_StartTime
+//| extend vm_stop = tags.VM_StopTime
+//| project name, vm_start, vm_stop, PowerStatus, properties
+| project name, vmSize, diskSizeGB, PowerStatus, osName
