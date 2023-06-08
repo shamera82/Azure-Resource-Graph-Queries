@@ -1,0 +1,21 @@
+Resources | where type in~ ('microsoft.compute/virtualmachines','microsoft.classiccompute/virtualmachines') | extend armResourceId = id  
+                | extend resourceId=tolower(armResourceId) | join kind = leftouter ( RecoveryServicesResources
+                //| where type == "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+                //| where properties.backupManagementType == "AzureIaasVM"
+                //| where properties.workloadType in~ ("VM")
+                | extend lastbackup = properties.lastBackupTime
+                | extend lastRecoveryPoint = properties.lastRecoveryPoint
+                | project resourceId = tolower(tostring(properties.sourceResourceId)), backupItemid = id, lastbackup, lastRecoveryPoint, isBackedUp = isnotempty(id) ) on resourceId
+                //| extend isProtected = isnotempty(backupItemid) | where (isProtected == (0))
+                | extend sku_2 = properties.storageProfile.imageReference.sku
+                | extend publisher = properties.storageProfile.imageReference.publisher
+                | extend offer = properties.storageProfile.imageReference.offer
+                | extend osType = properties.storageProfile.osDisk.osType
+                | extend osVersion = properties.extended.instanceView.osVersion
+                | extend osName = properties.extended.instanceView.osName
+                | extend PowerStatus = properties.extended.instanceView.powerState.displayStatus
+                | extend env_tag = tags.Environment
+                | extend app_tag = tags.App
+                | extend description_tag = tags.Description
+                | extend AssetName_tag = tags.AssetName
+                | project tenantId,location, env_tag, app_tag, description_tag,AssetName_tag, resourceId,name, type, subscriptionId, resourceGroup, isBackedUp, backupItemid, sku_2, publisher, offer, osType, osVersion, osName, PowerStatus, lastbackup, lastRecoveryPoint
