@@ -1,0 +1,15 @@
+resources
+| where type in~ ('microsoft.insights/metricalerts','microsoft.insights/scheduledqueryrules') and ['kind'] !in~ ('LogToMetric','LogToApplicationInsights')
+| extend severity = strcat("Sev", properties["severity"])
+| extend enabled = tobool(properties["enabled"])
+| extend action_grp_id = strcat("", properties["actions"])
+| extend scopes = properties.scopes
+| extend criteria = properties.criteria.allOf
+| where enabled in~ ('true')
+| where tolower(properties["targetResourceTypes"]) matches regex 'microsoft.compute/virtualmachines($|/.*)?' or tolower(properties["targetResourceType"]) matches regex 'microsoft.compute/virtualmachines($|/.*)?' or tolower(properties["scopes"]) matches regex 'providers/microsoft.compute/virtualmachines($|/.*)?'
+| project id,name,type,properties,enabled,severity,subscriptionId,action_grp_id,scopes,criteria
+| union (resources | where type =~ 'microsoft.insights/activitylogalerts' | extend severity = "Sev4"
+| extend enabled = tobool(properties["enabled"]) | mvexpand innerCondition = properties["condition"]["allOf"] | where innerCondition["field"] =~ 'category'
+| where enabled in~ ('true')
+| where tolower(properties["scopes"]) matches regex 'microsoft.compute/virtualmachines($|/.*)?' or tolower(properties["condition"]["allOf"]) matches regex 'microsoft.compute/virtualmachines($|/.*)?' | project id,name,type,properties,enabled,severity,subscriptionId)
+| order by tolower(name) asc
